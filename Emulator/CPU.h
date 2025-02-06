@@ -41,7 +41,7 @@
 class CPU 
 {
 private:
-	uint64_t registers[4] = { 0 }; // r0 r1 r2 r3
+	uint64_t registers[4] = { 0 };
 	uint64_t program_counter = 0;
 	std::unordered_map<uint64_t, uint8_t> memory;
 
@@ -65,7 +65,7 @@ private:
 	uint8_t op1_marker, op2_marker;
 	bool halted = false;
 public:
-	uint64_t get_program_counter();
+	// CPU
 	uint64_t get_register(uint64_t reg);
 	bool set_register(uint64_t reg, uint64_t data);
 	bool set_memory(uint64_t address, uint8_t data);
@@ -73,7 +73,7 @@ public:
 	uint8_t get_memory(uint64_t address);
 	uint64_t get_memory_64(uint64_t address);
 
-
+	// ALU
 	uint64_t add(uint64_t a, uint64_t b);		// add rx ry, saves to rx
 	uint64_t sub(uint64_t a, uint64_t b);		// sub rx ry, saves to rx
 	uint64_t mul(uint64_t a, uint64_t b);		// mul rx ry, saves to rx
@@ -83,11 +83,15 @@ public:
 	uint64_t BINnot(uint64_t a);				// not rx, saves to rx
 	uint64_t BINxor(uint64_t a, uint64_t b);	// xor rx ry, saves to rx
 
-
-	bool load_program(std::string file);
+	// CU
+	bool get_halted();
 	uint8_t fetch();
 	uint64_t fetch_64();
 	void decode();
 	void execute();
-	bool get_halted();
+
+	// IO
+	bool load_program(std::string file);
+	void in(uint64_t reg);
+	void out(uint64_t reg);
 };

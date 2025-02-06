@@ -131,7 +131,10 @@
     <ClInclude Include="includes.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ALU.cpp" />
     <ClCompile Include="CPU.cpp" />
+    <ClCompile Include="CU.cpp" />
+    <ClCompile Include="IO.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
