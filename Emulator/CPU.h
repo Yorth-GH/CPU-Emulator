@@ -30,10 +30,11 @@
 * 0xf3 r3
 * 
 * mov flags
-* 0x00 - direct
+* 0x00 - address
 * 0x01 - register
 * 0x02 - immediate
-* 0x03 - indirect
+* 0x03 - indirect address
+* 0x04 - indirect register
 */ 
 
 

@@ -102,39 +102,36 @@ bool CPU::load_program(std::string file)
 			if (opcode_map.at(instruction) == 0x12)
 				continue;
 
-			if (operand1.length() == 16) // address
+			if (operand1.length() == 16)
 			{
-#ifdef _DEBUG 
-				std::cout << "o1 - address" << std::endl;
-#endif
 				set_memory(temp_address++, 0x00);
 				uint64_t direct_address = std::stoull(operand1, nullptr, 16);
 				set_memory_64(temp_address, direct_address);
 				temp_address += 8;
 			}
-			else if (operand1.at(0) == 'r') // register
+			else if (operand1.at(0) == 'r')
 			{
-#ifdef _DEBUG 
-				std::cout << "o1 - register" << std::endl;
-#endif
 				set_memory(temp_address++, 0x01);
 				set_memory(temp_address++, register_map.at(operand1));
 			}
-			else if (operand1.at(0) == '[') // indirect
+			else if (operand1.at(0) == '[')
 			{
-#ifdef _DEBUG 
-				std::cout << "o1 - indirect" << std::endl;
-#endif
-				set_memory(temp_address++, 0x03);
-				std::string operand1_indirect = operand1.substr(1, operand1.length() - 2);
-				set_memory_64(temp_address, std::stoull(operand1_indirect, nullptr, 16));
-				temp_address += 8;
+				if (operand1.length() == 4)
+				{
+					set_memory(temp_address++, 0x04);
+					std::string operand1_indirect = operand1.substr(1, operand1.length() - 2);
+					set_memory(temp_address++, register_map.at(operand1_indirect));
+				}
+				else if (operand1.length() == 18)
+				{
+					set_memory(temp_address++, 0x03);
+					std::string operand1_indirect = operand1.substr(1, operand1.length() - 2);
+					set_memory_64(temp_address, std::stoull(operand1_indirect, nullptr, 16));
+					temp_address += 8;
+				}
 			}
-			else // immediate
+			else
 			{
-#ifdef _DEBUG 
-				std::cout << "o1 - immediate" << std::endl;
-#endif
 				set_memory(temp_address++, 0x02);
 				set_memory_64(temp_address, std::stoull(operand1, nullptr, 16));
 				temp_address += 8;
@@ -143,44 +140,40 @@ bool CPU::load_program(std::string file)
 			if (opcode_map.at(instruction) == 0x07 || opcode_map.at(instruction) == 0x10 || opcode_map.at(instruction) == 0x11)
 				continue;
 
-			if (operand2.length() == 16) //address
+			if (operand2.length() == 16)
 			{
-#ifdef _DEBUG 
-				std::cout << "o2 - address" << std::endl;
-#endif
 				set_memory(temp_address++, 0x00);
 				uint64_t direct_address = std::stoull(operand2, nullptr, 16);
 				set_memory_64(temp_address, direct_address);
 				temp_address += 8;
 			}
-			else if (operand2.at(0) == 'r') // register
+			else if (operand2.at(0) == 'r')
 			{
-#ifdef _DEBUG 
-				std::cout << "o2 - register" << std::endl;
-#endif
 				set_memory(temp_address++, 0x01);
 				set_memory(temp_address++, register_map.at(operand2));
 			}
-			else if (operand2.at(0) == '[') // indirect
+			else if (operand2.at(0) == '[')
 			{
-#ifdef _DEBUG 
-				std::cout << "o2 - indirect" << std::endl;
-#endif
-				set_memory(temp_address++, 0x03);
-				std::string operand2_indirect = operand2.substr(1, operand2.length() - 2);
-				set_memory_64(temp_address, std::stoull(operand2_indirect, nullptr, 16));
-				temp_address += 8;
+				if (operand2.length() == 4)
+				{
+					set_memory(temp_address++, 0x04);
+					std::string operand2_indirect = operand2.substr(1, operand2.length() - 2);
+					set_memory(temp_address++, register_map.at(operand2_indirect));
+				}
+				else if (operand2.length() == 18)
+				{
+					set_memory(temp_address++, 0x03);
+					std::string operand2_indirect = operand2.substr(1, operand2.length() - 2);
+					set_memory_64(temp_address, std::stoull(operand2_indirect, nullptr, 16));
+					temp_address += 8;
+				}
 			} 
-			else // immediate
+			else
 			{
-#ifdef _DEBUG 
-				std::cout << "o2 - immediate" << std::endl;
-#endif
 				set_memory(temp_address++, 0x02);
 				set_memory_64(temp_address, std::stoull(operand2, nullptr, 16));
 				temp_address += 8;
 			}
-
 		}
 	}
 	return true;
@@ -236,14 +229,14 @@ void CPU::decode()
 		operand2 = 0;
 
 		op1_marker = fetch();
-		if (op1_marker == 0x01)
+		if (op1_marker == 0x01 || op1_marker == 0x04)
 			operand1 = fetch();
 		else
 			operand1 = fetch_64();
 		
 
 		op2_marker = fetch();
-		if (op2_marker == 0x01)
+		if (op2_marker == 0x01 || op2_marker == 0x04)
 			operand2 = fetch();
 		else
 			operand2 = fetch_64();
@@ -260,108 +253,107 @@ void CPU::execute()
 	switch (opcode)
 	{
 	case 0x01:
-#ifdef _DEBUG 
-		std::cout << "op - add" << std::endl;
-#endif
 		set_register(operand1, add(operand1, operand2));
 		break;
 
 	case 0x02:
-#ifdef _DEBUG 
-		std::cout << "op - sub" << std::endl;
-#endif
 		set_register(operand1, sub(operand1, operand2));
 		break;
 
 	case 0x03:
-#ifdef _DEBUG 
-		std::cout << "op - mul" << std::endl;
-#endif
 		set_register(operand1, mul(operand1, operand2));
 		break;
 
 	case 0x04:
-#ifdef _DEBUG 
-		std::cout << "op - div" << std::endl;
-#endif
 		set_register(operand1, div(operand1, operand2));
 		break;
 
 	case 0x05:
-#ifdef _DEBUG 
-		std::cout << "op - BINand" << std::endl;
-#endif
 		set_register(operand1, BINand(operand1, operand2));
 		break;
 
 	case 0x06:
-#ifdef _DEBUG 
-		std::cout << "op - BINor" << std::endl;
-#endif
 		set_register(operand1, BINor(operand1, operand2));
 		break;
 
 	case 0x07:
-#ifdef _DEBUG 
-		std::cout << "op - BINnot" << std::endl;
-#endif
 		set_register(operand1, BINnot(operand1));
 		break;
 
 	case 0x08:
-#ifdef _DEBUG 
-		std::cout << "op - BINxor" << std::endl;
-#endif
 		set_register(operand1, BINxor(operand1, operand2));
 		break;
 
-	case 0x09:
-#ifdef _DEBUG 
-		std::cout << "op - mov" << std::endl;
-#endif
- 		if (op1_marker == 0x01 && op2_marker == 0x01)
-			set_register(operand1, get_register(operand2));
-		else if (op1_marker == 0x01 && op2_marker != 0x01)
+	case 0x09:	
+		switch (op1_marker)
 		{
-			if (op2_marker == 0x00)
-				set_register(operand1, get_memory_64(operand2));
-			else
+		case 0x00: case 0x02:
+			std::cout << "ERROR ??OPERAND1 IS VALUE?? ERROR" << std::endl;
+			break;
+		case 0x01:
+			switch (op2_marker)
+			{
+			case 0x00: case 0x02:
 				set_register(operand1, operand2);
-		}
-		else if (op1_marker != 0x01 && op2_marker == 0x01)
-		{
-			// TODO: set all 8 bytes
-			set_memory_64(operand1, get_register(operand2));
-		}
-		else if (op1_marker != 0x01 && op2_marker != 0x01)
-		{
-			if (op2_marker == 0x00)
-				set_memory(operand1, get_memory_64(operand2));
-			else
-				set_memory(operand1, operand2);
+				break;
+			case 0x01:
+				set_register(operand1, get_register(operand2));
+				break;
+			case 0x03:
+				set_register(operand1, get_memory_64(operand2));
+				break;
+			case 0x04:
+				set_register(operand1, get_memory_64(get_register(operand2)));
+				break;
+			}
+			break;
+		case 0x03:
+			switch (op2_marker)
+			{
+			case 0x00: case 0x02:
+				set_memory_64(operand1, operand2);
+				break;
+			case 0x01:
+				set_memory_64(operand1, get_register(operand2));
+				break;
+			case 0x03:
+				set_memory_64(operand1, get_memory_64(operand2));
+				break;
+			case 0x04:
+				set_memory_64(operand1, get_memory_64(get_register(operand2)));
+				break;
+			}
+			break;
+		case 0x04:
+			switch (op2_marker)
+			{
+			case 0x00: case 0x02:
+				set_register(operand1, operand2);
+				break;
+			case 0x01:
+				set_register(operand1, get_register(operand2));
+				break;
+			case 0x03:
+				set_register(operand1, get_memory_64(operand2));
+				break;
+			case 0x04:
+				break;
+			}
+			break;
 		}
 		break;
 
 	case 0x10:
-#ifdef _DEBUG 
-		std::cout << "op - in" << std::endl;
-#endif
 		uint64_t input;
 		std::cin >> input;
 		set_register(operand1, input);
 		break;
 
 	case 0x11:
-#ifdef _DEBUG 
-		std::cout << "op - out" << std::endl;
-#endif
 		std::cout << get_register(operand1) << std::endl;
 		break;
 
 	case 0x12:
-#ifdef _DEBUG 
-		std::cout << "op - halt" << std::endl;
-#endif
 		halted = true;
 		break;
 	}

@@ -1,8 +1,15 @@
-mov r0 5
-mov r1 6
+mov r1 2
 mov r2 r1
-mov 0000000000000070 r0
-mov r3 0000000000000070
+mov r3 0000000000000101
+mov [0000000000000100] r0
+mov r0 [0000000000000100]
+out r0
+out r2
+mov r2 [r3]
+out r2
+out r0
+out r3
+mov r0 4
 add r0 r1
 in r2
 add r2 r1
