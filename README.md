@@ -4,10 +4,10 @@
 This CPU Emulator was made as part of my Computer Architecture course at Faculty of Electrical Engineering. 
 
 ## The emulator features:
-- 4 64 bit General Purpose Registers
-- 64 bit Address Space
-- 18 instructions
-- Program Counter
+- 4 64 bit General Purpose Registers,
+- 64 bit Address Space,
+- 18 instructions,
+- Program Counter,
 - Parsing assembler code into bytecode
 
 ## Instruction set: 
@@ -16,6 +16,7 @@ This CPU Emulator was made as part of my Computer Architecture course at Faculty
 \
 Operands are marked within brackets if multiple types of access are available. (ex. direct and indirect addressing)\
 \
+Operand types:\
 `rx - direct addressing register x`\
 `addrx - direct addressing address x`\
 `imm - immediate value`\
@@ -37,3 +38,8 @@ Operands are marked within brackets if multiple types of access are available. (
 - `in rx`<br> allows user to input a value from keyboard into register `rx`
 - `out rx`<br> prints the value of register `rx`
 - `halt`<br> stops the execution of CPU
+
+## Future plans:
+- Add string and floating point support,
+- Remove the need for flags/markers to differentiate operand types,
+- Nothing else at the moment.
