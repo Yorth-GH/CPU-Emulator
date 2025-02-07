@@ -59,7 +59,10 @@ void CPU::decode()
 			halted = true;
 			break;
 		}
-		operand1 = fetch();
+		else if (op1_marker == 0x01)
+			operand1 = fetch();
+		else
+			operand1 = fetch_64();
 
 		op2_marker = fetch();
 		if (op2_marker != 0x01 && op2_marker != 0x02) // operand 2 not a register or immediate value
@@ -68,7 +71,10 @@ void CPU::decode()
 			halted = true;
 			break;
 		}
-		operand2 = fetch();
+		else if (op2_marker == 0x01)
+			operand2 = fetch();
+		else
+			operand2 = fetch_64();
 		break;
 
 	case 0x07: case 0x10: case 0x11: // not, in, out

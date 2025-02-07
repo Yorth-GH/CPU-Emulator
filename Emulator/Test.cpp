@@ -695,3 +695,61 @@ TEST_F(CPU_TEST, jl_indirreg)
 	}
 	EXPECT_EQ(testCPU.get_pc(), 0x91);
 }
+
+
+//done
+TEST_F(CPU_TEST, cmp_imm_imm)
+{
+	testCPU.load_line("cmp 5 10");
+	testCPU.load_line("halt");
+
+	while (!testCPU.get_halted())
+	{
+		testCPU.decode();
+		testCPU.execute();
+	}
+	EXPECT_EQ(testCPU.get_register(0xf4), 0x2);
+}
+
+TEST_F(CPU_TEST, cmp_reg_imm)
+{
+	testCPU.load_line("mov r0 10");
+	testCPU.load_line("cmp r0 10");
+	testCPU.load_line("halt");
+
+	while (!testCPU.get_halted())
+	{
+		testCPU.decode();
+		testCPU.execute();
+	}
+	EXPECT_EQ(testCPU.get_register(0xf4), 0x0);
+}
+
+TEST_F(CPU_TEST, cmp_imm_reg)
+{
+	testCPU.load_line("mov r0 10");
+	testCPU.load_line("cmp 5 r0");
+	testCPU.load_line("halt");
+
+	while (!testCPU.get_halted())
+	{
+		testCPU.decode();
+		testCPU.execute();
+	}
+	EXPECT_EQ(testCPU.get_register(0xf4), 0x2);
+}
+
+TEST_F(CPU_TEST, cmp_reg_reg)
+{
+	testCPU.load_line("mov r0 10");
+	testCPU.load_line("mov r1 12");
+	testCPU.load_line("cmp r1 r0");
+	testCPU.load_line("halt");
+
+	while (!testCPU.get_halted())
+	{
+		testCPU.decode();
+		testCPU.execute();
+	}
+	EXPECT_EQ(testCPU.get_register(0xf4), 0x1);
+}
