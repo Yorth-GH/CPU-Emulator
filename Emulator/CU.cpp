@@ -268,19 +268,63 @@ void CPU::execute()
 		break;
 	case 0x0b: // jump if equal
 		if (get_register(0xf3) == 0)
-			program_counter = operand1;
+			switch (op1_marker)
+			{
+			case 0x00: // addr
+				program_counter = operand1;
+				break;
+			case 0x03: // [addr]
+				program_counter = get_memory_64(operand1);
+				break;
+			case 0x04: // [rx]
+				program_counter = get_memory_64(get_register(operand1));
+				break;
+			}
 		break;
 	case 0x0c: // jump if not equal
 		if (get_register(0xf3) > 0)
-			program_counter = operand1;
+			switch (op1_marker)
+			{
+			case 0x00: // addr
+				program_counter = operand1;
+				break;
+			case 0x03: // [addr]
+				program_counter = get_memory_64(operand1);
+				break;
+			case 0x04: // [rx]
+				program_counter = get_memory_64(get_register(operand1));
+				break;
+			}
 		break;
 	case 0x0d: // jump if greater or equal
 		if (get_register(0xf3) < 2)
-			program_counter = operand1;
+			switch (op1_marker)
+			{
+			case 0x00: // addr
+				program_counter = operand1;
+				break;
+			case 0x03: // [addr]
+				program_counter = get_memory_64(operand1);
+				break;
+			case 0x04: // [rx]
+				program_counter = get_memory_64(get_register(operand1));
+				break;
+			}
 		break;
 	case 0x0e: // jump if less
 		if (get_register(0xf3) == 2)
-			program_counter = operand1;
+			switch (op1_marker)
+			{
+			case 0x00: // addr
+				program_counter = operand1;
+				break;
+			case 0x03: // [addr]
+				program_counter = get_memory_64(operand1);
+				break;
+			case 0x04: // [rx]
+				program_counter = get_memory_64(get_register(operand1));
+				break;
+			}
 		break;
 	case 0x0f: // compare 2 values
 		if (op1_marker == 0x01 || op1_marker == 0x02 ||
