@@ -10,10 +10,13 @@ void main()
 		return;
 	}
 
-	// RUN
+	::testing::InitGoogleTest();	
+	RUN_ALL_TESTS();
+
 	while (!cpu.get_halted())
 	{
 		cpu.decode();
 		cpu.execute();
 	}
+	std::cout << "Finished";
 }

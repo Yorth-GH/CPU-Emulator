@@ -2,12 +2,8 @@
 
 bool CPU::load_operand(std::string operand, uint64_t& temp_address)
 {
-	if (!(!operand.empty() && std::all_of(operand.begin(), operand.end(), ::isdigit)))
-	{
-		std::cout << "ERROR ??INVALID OPERAND?? ERROR" << std::endl << "Operand: " << operand << std::endl;
-		return false;
-	}
-	else if (operand.length() == 16) // address
+
+	if (operand.length() == 16) // address
 	{
 		set_memory(temp_address++, 0x00);
 		uint64_t direct_address = std::stoull(operand, nullptr, 16);
@@ -34,6 +30,11 @@ bool CPU::load_operand(std::string operand, uint64_t& temp_address)
 			set_memory_64(temp_address, std::stoull(operand1_indirect, nullptr, 16));
 			temp_address += 8;
 		}
+	}
+	else if (!(!operand.empty() && std::all_of(operand.begin(), operand.end(), ::isdigit)))
+	{
+		std::cout << "ERROR ??INVALID OPERAND?? ERROR" << std::endl << "Operand: " << operand << std::endl;
+		return false;
 	}
 	else // immediate value
 	{
@@ -69,7 +70,9 @@ bool CPU::load_program(std::string file)
 			if (!load_operand(operand1, temp_address))
 				return false;
 
-			if (opcode_map.at(instruction) == 0x07 || opcode_map.at(instruction) == 0x10 || opcode_map.at(instruction) == 0x11) // single operand instructions
+			if (opcode_map.at(instruction) == 0x07 || opcode_map.at(instruction) == 0x10 || opcode_map.at(instruction) == 0x11 ||
+				opcode_map.at(instruction) == 0x0a || opcode_map.at(instruction) == 0x0b || opcode_map.at(instruction) == 0x0c ||
+				opcode_map.at(instruction) == 0x0d || opcode_map.at(instruction) == 0x0e) // single operand instructions
 				continue;
 
 			if (!load_operand(operand2, temp_address))

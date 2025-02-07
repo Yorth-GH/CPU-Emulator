@@ -27,8 +27,9 @@
 * 0xf1						r1
 * 0xf2						r2
 * 0xf3						r3
+* 0xf4						flag
 *
-* flags:
+* markers:
 * 0x00 - address			addr
 * 0x01 - register			rx
 * 0x02 - immediate			imm
@@ -44,7 +45,7 @@
 class CPU 
 {
 private:
-	uint64_t registers[4] = { 0 };
+	uint64_t registers[5] = { 0 };
 	uint64_t program_counter = 0;
 	std::unordered_map<uint64_t, uint8_t> memory;
 
@@ -59,7 +60,7 @@ private:
 
 	std::unordered_map<std::string, uint8_t> register_map = 
 	{
-	   {"r0", 0xf0}, {"r1", 0xf1}, {"r2", 0xf2}, {"r3", 0xf3}
+	   {"r0", 0xf0}, {"r1", 0xf1}, {"r2", 0xf2}, {"r3", 0xf3}, {"flag", 0xf4}
 	};
 
 	// for decoding and executing
@@ -68,14 +69,20 @@ private:
 	uint8_t op1_marker, op2_marker;
 	bool halted = false;
 
+	// for cmp
+	uint64_t value1 = 0;
+	uint64_t value2 = 0;
+
 public:
 	// CPU
+	uint64_t get_pc();
 	uint64_t get_register(uint64_t reg);
 	bool set_register(uint64_t reg, uint64_t data);
 	bool set_memory(uint64_t address, uint8_t data);
 	bool set_memory_64(uint64_t address, uint64_t data);
 	uint8_t get_memory(uint64_t address);
 	uint64_t get_memory_64(uint64_t address);
+	void reset();
 
 	// ALU
 	uint64_t add(uint64_t a, uint64_t b);		
@@ -93,15 +100,17 @@ public:
 	uint64_t fetch_64();
 	void decode();
 	void execute();
-	// cmp stores result in r3
-	// SAVE THE VALUE IN r3 BEFORE CALLING CMP
-	
+
+	// cmp stores result in flags
 	// call cmp before conditional jumps
-	// not running cmp can result in unwanted behavior
+	// not running cmp can and probably will result in unwanted behavior
 
 	// IO
 	bool load_operand(std::string operand, uint64_t& temp_address);
 	bool load_program(std::string file);
 	void in(uint64_t reg);
 	void out(uint64_t reg);
+
+	// TESTING
+	void load_line(std::string line);
 };

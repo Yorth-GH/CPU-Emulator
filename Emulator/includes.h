@@ -9,3 +9,4 @@
 #include <vector>
 #include <algorithm>
 #include "CPU.h"
+#include <gtest/gtest.h>

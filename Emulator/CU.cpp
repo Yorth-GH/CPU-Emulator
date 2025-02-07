@@ -33,10 +33,7 @@ void CPU::decode()
 		if (op1_marker != 0x01) // operand 1 not a register
 		{
 			std::cout << "ERROR ??OPERAND NOT A REGISTER?? ERROR" << std::endl;
-			if (op1_marker == 0x04) // unused, calling it so the program doesnt crash
-				fetch();
-			else
-				fetch_64();
+			halted = true;
 			break;
 		}
 		operand1 = fetch();
@@ -45,10 +42,7 @@ void CPU::decode()
 		if (op2_marker != 0x01) // operand 2 not a register
 		{
 			std::cout << "ERROR ??OPERAND NOT A REGISTER?? ERROR" << std::endl;
-			if (op2_marker == 0x04) // unused, calling it so the program doesnt crash
-				fetch();
-			else
-				fetch_64();
+			halted = true;
 			break;
 		}
 		operand2 = fetch();
@@ -62,10 +56,7 @@ void CPU::decode()
 		if (op1_marker != 0x01 && op1_marker != 0x02) // operand 1 not a register or immediate value
 		{
 			std::cout << "ERROR ??OPERAND NOT A REGISTER OR IMMEDIATE VALUE?? ERROR" << std::endl;
-			if (op1_marker == 0x04) // unused, calling it so the program doesnt crash
-				fetch();
-			else
-				fetch_64();
+			halted = true;
 			break;
 		}
 		operand1 = fetch();
@@ -74,10 +65,7 @@ void CPU::decode()
 		if (op2_marker != 0x01 && op2_marker != 0x02) // operand 2 not a register or immediate value
 		{
 			std::cout << "ERROR ??OPERAND NOT A REGISTER OR IMMEDIATE VALUE?? ERROR" << std::endl;
-			if (op2_marker == 0x04) // unused, calling it so the program doesnt crash
-				fetch();
-			else
-				fetch_64();
+			halted = true;
 			break;
 		}
 		operand2 = fetch();
@@ -91,10 +79,7 @@ void CPU::decode()
 		if (op1_marker != 0x01) // operand 1 not a register
 		{
 			std::cout << "ERROR ??OPERAND NOT A REGISTER?? ERROR" << std::endl;
-			if (op1_marker == 0x04) // unused, calling it so the program doesnt crash
-				fetch();
-			else
-				fetch_64();
+			halted = true;
 			break;
 		}
 		operand1 = fetch();
@@ -108,15 +93,12 @@ void CPU::decode()
 		if (op1_marker == 0x02 || op1_marker == 0x01) // operand 1 not an address or does not contain an address
 		{
 			std::cout << "ERROR ??OPERAND NOT AN ADDRESS?? ERROR" << std::endl;
-			if (op1_marker == 0x01) // unused, calling it so the program doesnt crash
-				fetch();
-			else
-				fetch_64();
+			halted = true;
 			break;
 		}
 		else if (op1_marker == 0x04) // operand 1 is a register containing an address
 			operand1 = fetch();
-		else if (op1_marker == 0x03) // operand 2 is an address containing an address
+		else if (op1_marker == 0x03 || op1_marker == 0x00) // operand 2 is an address containing an address or just an address
 			operand1 = fetch_64();
 		break;
 
@@ -128,7 +110,7 @@ void CPU::decode()
 		if (op1_marker == 0x02)
 		{
 			std::cout << "ERROR ??OPERAND IS AN IMMEDIATE VALUE?? ERROR" << std::endl;
-			fetch_64(); // unused, calling it so the program doesnt crash
+			halted = true;
 			break;
 		}
 		else if (op1_marker == 0x01 || op1_marker == 0x04)
@@ -138,7 +120,7 @@ void CPU::decode()
 
 
 		op2_marker = fetch();
-		if (op1_marker == 0x00 && op2_marker == 0x00)
+		if ((op1_marker == 0x00 && op2_marker == 0x00) || (op1_marker == 0x03 && op2_marker == 0x00) || (op1_marker == 0x04 && op2_marker == 0x00))
 		{
 			std::cout << "ERROR ??MOVING ADDRESS INTO ADDRESS?? ERROR" << std::endl;
 			fetch_64(); // unused, calling it so the program doesnt crash
@@ -232,20 +214,41 @@ void CPU::execute()
 				break;
 			}
 			break;
-		case 0x03: case 0x04: // mov [addr] || mov [rx]
+		case 0x03: // mov [addr]
 			switch (op2_marker)
 			{
-			case 0x00: case 0x02: // addr || imm
-				set_memory_64(get_memory(operand1), operand2);
+			case 0x00: // addr
+				break;
+			case 0x02: // imm
+				set_memory_64(get_memory_64(operand1), operand2);
 				break;
 			case 0x01: // ry
-				set_memory_64(get_memory(operand1), get_register(operand2));
+				set_memory_64(get_memory_64(operand1), get_register(operand2));
 				break;
 			case 0x03: // [addr]
-				set_memory_64(get_memory(operand1), get_memory_64(operand2));
+				set_memory_64(get_memory_64(operand1), get_memory_64(operand2));
 				break;
 			case 0x04: // [ry]
-				set_memory_64(get_memory(operand1), get_memory_64(get_register(operand2)));
+				set_memory_64(get_memory_64(operand1), get_memory_64(get_register(operand2)));
+				break;
+			}
+			break;
+		case 0x04: // mov [rx]
+			switch (op2_marker)
+			{
+			case 0x00: // addr
+				break;
+			case 0x02: // imm
+				set_memory_64(get_register(operand1), operand2);
+				break;
+			case 0x01: // ry
+				set_memory_64(get_register(operand1), get_register(operand2));
+				break;
+			case 0x03: // [addr]
+				set_memory_64(get_register(operand1), get_memory_64(operand2));
+				break;
+			case 0x04: // [ry]
+				set_memory_64(get_register(operand1), get_memory_64(get_register(operand2)));
 				break;
 			}
 			break;
@@ -267,7 +270,7 @@ void CPU::execute()
 		}
 		break;
 	case 0x0b: // jump if equal
-		if (get_register(0xf3) == 0)
+		if (get_register(0xf4) == 0)
 			switch (op1_marker)
 			{
 			case 0x00: // addr
@@ -282,7 +285,7 @@ void CPU::execute()
 			}
 		break;
 	case 0x0c: // jump if not equal
-		if (get_register(0xf3) > 0)
+		if (get_register(0xf4) > 0)
 			switch (op1_marker)
 			{
 			case 0x00: // addr
@@ -297,7 +300,7 @@ void CPU::execute()
 			}
 		break;
 	case 0x0d: // jump if greater or equal
-		if (get_register(0xf3) < 2)
+		if (get_register(0xf4) < 2)
 			switch (op1_marker)
 			{
 			case 0x00: // addr
@@ -312,7 +315,7 @@ void CPU::execute()
 			}
 		break;
 	case 0x0e: // jump if less
-		if (get_register(0xf3) == 2)
+		if (get_register(0xf4) == 2)
 			switch (op1_marker)
 			{
 			case 0x00: // addr
@@ -327,18 +330,26 @@ void CPU::execute()
 			}
 		break;
 	case 0x0f: // compare 2 values
+		if (op1_marker == 0x01)
+			value1 = get_register(operand1);
+		else
+			value1 = operand1;
+		if (op2_marker == 0x01)
+			value2 = get_register(operand2);
+		else
+			value2 = operand2;
 		if (op1_marker == 0x01 || op1_marker == 0x02 ||
 			op2_marker == 0x01 || op2_marker == 0x02)
 		{
 			// r3 set to 0 if op1 and op2 are equal
-			if (get_register(operand1) == get_register(operand2))
-				set_register(0xf3, 0); 
+			if (value1 == value2)
+				set_register(0xf4, 0); 
 			// r3 set to 1 if op1 is greater than op2
-			else if (get_register(operand1) > get_register(operand2))
-				set_register(0xf3, 1);
+			else if (value1 > value2)
+				set_register(0xf4, 1);
 			// r3 set to 1 if op1 is less than op2
-			else if (get_register(operand1) < get_register(operand2))
-				set_register(0xf3, 2);
+			else if (value1 < value2)
+				set_register(0xf4, 2);
 		}
 		break;
 

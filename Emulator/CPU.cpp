@@ -1,9 +1,14 @@
 #include "includes.h"
 
+uint64_t CPU::get_pc()
+{
+	return program_counter;
+}
+
 uint64_t CPU::get_register(uint64_t reg)
 {
 	uint64_t register_num = reg - 240;
-	if (register_num >= 0 && register_num < 4)
+	if (register_num >= 0 && register_num < 5)
 		return registers[register_num];
 	else
 		return UINT64_MAX;;
@@ -12,7 +17,7 @@ uint64_t CPU::get_register(uint64_t reg)
 bool CPU::set_register(uint64_t reg, uint64_t data)
 {
 	uint64_t register_num = reg - 240;
-	if (register_num >= 0 && register_num < 4)
+	if (register_num >= 0 && register_num < 5)
 	{
 		registers[register_num] = data;
 		return true;
@@ -47,4 +52,19 @@ uint64_t CPU::get_memory_64(uint64_t address)
 	for (int i = 0; i < 8; i++)
 		value |= (uint64_t)(get_memory(temp++) << (i * 8));
 	return value;
+}
+
+void CPU::reset()
+{
+	memory.clear();
+
+	for (uint64_t reg : registers)
+		reg = 0;
+
+	program_counter = 0;
+
+	opcode = 0;
+	operand1 = 0, operand2 = 0;
+	op1_marker = 0, op2_marker = 0;
+	halted = false;
 }
