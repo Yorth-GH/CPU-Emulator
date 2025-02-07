@@ -1,42 +1,45 @@
 #pragma once
-
 #include "includes.h"
 
 /*
 * instruction set:
-* 0x01 add
-* 0x02 sub
-* 0x03 mul
-* 0x04 div
-* 0x05 and
-* 0x06 or
-* 0x07 not
-* 0x08 xor
-* 0x09 mov
-* 0x0a jmp
-* 0x0b je
-* 0x0c jne
-* 0x0d jge
-* 0x0e jl
-* 0x0f cmp
-* 0x10 in
-* 0x11 out
+* 0x01 add					rx ry
+* 0x02 sub					rx ry
+* 0x03 mul					rx ry
+* 0x04 div					rx ry
+* 0x05 and					rx ry
+* 0x06 or					rx ry
+* 0x07 not					rx
+* 0x08 xor					rx ry
+* 0x09 mov					( rx,addr,[rx],[addr] ) ( ry,addr,[ry],[addr], imm )
+* 0x0a jmp					( addr, [addr], [rx] )
+* 0x0b je					( addr, [addr], [rx] )
+* 0x0c jne					( addr, [addr], [rx] )
+* 0x0d jge					( addr, [addr], [rx] )
+* 0x0e jl					( addr, [addr], [rx] )
+* 0x0f cmp					( rx, imm ) ( ry, imm )
+* 0x10 in					rx
+* 0x11 out					rx
 * 0x12 halt
-* 
+*
 * registers:
-* 0xf0 r0
-* 0xf1 r1
-* 0xf2 r2
-* 0xf3 r3
-* 
-* mov flags
-* 0x00 - address
-* 0x01 - register
-* 0x02 - immediate
-* 0x03 - indirect address
-* 0x04 - indirect register
-*/ 
-
+* 0xf0						r0
+* 0xf1						r1
+* 0xf2						r2
+* 0xf3						r3
+*
+* flags:
+* 0x00 - address			addr
+* 0x01 - register			rx
+* 0x02 - immediate			imm
+* 0x03 - indirect address	[addr]
+* 0x04 - indirect register	[rx]
+*
+* cmp values:
+* 0	- equal
+* 1 - greater than
+* 2 - less than
+*/
 
 class CPU 
 {
@@ -64,6 +67,7 @@ private:
 	uint64_t operand1, operand2;
 	uint8_t op1_marker, op2_marker;
 	bool halted = false;
+
 public:
 	// CPU
 	uint64_t get_register(uint64_t reg);
@@ -74,23 +78,29 @@ public:
 	uint64_t get_memory_64(uint64_t address);
 
 	// ALU
-	uint64_t add(uint64_t a, uint64_t b);		// add rx ry, saves to rx
-	uint64_t sub(uint64_t a, uint64_t b);		// sub rx ry, saves to rx
-	uint64_t mul(uint64_t a, uint64_t b);		// mul rx ry, saves to rx
-	uint64_t div(uint64_t a, uint64_t b);		// div rx ry, saves to rx
-	uint64_t BINand(uint64_t a, uint64_t b);	// and rx ry, saves to rx
-	uint64_t BINor(uint64_t a, uint64_t b);		// or rx ry, saves to rx
-	uint64_t BINnot(uint64_t a);				// not rx, saves to rx
-	uint64_t BINxor(uint64_t a, uint64_t b);	// xor rx ry, saves to rx
+	uint64_t add(uint64_t a, uint64_t b);		
+	uint64_t sub(uint64_t a, uint64_t b);		
+	uint64_t mul(uint64_t a, uint64_t b);		
+	uint64_t div(uint64_t a, uint64_t b);		
+	uint64_t BINand(uint64_t a, uint64_t b);	
+	uint64_t BINor(uint64_t a, uint64_t b);		
+	uint64_t BINnot(uint64_t a);				
+	uint64_t BINxor(uint64_t a, uint64_t b);	
 
 	// CU
-	bool get_halted();
+	bool get_halted() const;
 	uint8_t fetch();
 	uint64_t fetch_64();
 	void decode();
 	void execute();
+	// cmp stores result in r3
+	// SAVE THE VALUE IN r3 BEFORE CALLING CMP
+	
+	// call cmp before conditional jumps
+	// not running cmp can result in unwanted behavior
 
 	// IO
+	bool load_operand(std::string operand, uint64_t& temp_address);
 	bool load_program(std::string file);
 	void in(uint64_t reg);
 	void out(uint64_t reg);

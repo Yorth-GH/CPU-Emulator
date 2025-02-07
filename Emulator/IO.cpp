@@ -1,5 +1,49 @@
 #include "includes.h"
 
+bool CPU::load_operand(std::string operand, uint64_t& temp_address)
+{
+	if (!(!operand.empty() && std::all_of(operand.begin(), operand.end(), ::isdigit)))
+	{
+		std::cout << "ERROR ??INVALID OPERAND?? ERROR" << std::endl << "Operand: " << operand << std::endl;
+		return false;
+	}
+	else if (operand.length() == 16) // address
+	{
+		set_memory(temp_address++, 0x00);
+		uint64_t direct_address = std::stoull(operand, nullptr, 16);
+		set_memory_64(temp_address, direct_address);
+		temp_address += 8;
+	}
+	else if (operand.at(0) == 'r') // register
+	{
+		set_memory(temp_address++, 0x01);
+		set_memory(temp_address++, register_map.at(operand));
+	}
+	else if (operand.at(0) == '[') // indirect
+	{
+		if (operand.length() == 4) // register
+		{
+			set_memory(temp_address++, 0x04);
+			std::string operand1_indirect = operand.substr(1, operand.length() - 2);
+			set_memory(temp_address++, register_map.at(operand1_indirect));
+		}
+		else if (operand.length() == 18) // address
+		{
+			set_memory(temp_address++, 0x03);
+			std::string operand1_indirect = operand.substr(1, operand.length() - 2);
+			set_memory_64(temp_address, std::stoull(operand1_indirect, nullptr, 16));
+			temp_address += 8;
+		}
+	}
+	else // immediate value
+	{
+		set_memory(temp_address++, 0x02);
+		set_memory_64(temp_address, std::stoull(operand, nullptr, 16));
+		temp_address += 8;
+	}
+	return true;
+}
+
 bool CPU::load_program(std::string file)
 {
 	std::ifstream program_file(file);
@@ -19,81 +63,22 @@ bool CPU::load_program(std::string file)
 		{
 			set_memory(temp_address++, opcode_map.at(instruction));
 
-			if (opcode_map.at(instruction) == 0x12)
+			if (opcode_map.at(instruction) == 0x12) // halt, no operands
 				continue;
 
-			if (operand1.length() == 16)
-			{
-				set_memory(temp_address++, 0x00);
-				uint64_t direct_address = std::stoull(operand1, nullptr, 16);
-				set_memory_64(temp_address, direct_address);
-				temp_address += 8;
-			}
-			else if (operand1.at(0) == 'r')
-			{
-				set_memory(temp_address++, 0x01);
-				set_memory(temp_address++, register_map.at(operand1));
-			}
-			else if (operand1.at(0) == '[')
-			{
-				if (operand1.length() == 4)
-				{
-					set_memory(temp_address++, 0x04);
-					std::string operand1_indirect = operand1.substr(1, operand1.length() - 2);
-					set_memory(temp_address++, register_map.at(operand1_indirect));
-				}
-				else if (operand1.length() == 18)
-				{
-					set_memory(temp_address++, 0x03);
-					std::string operand1_indirect = operand1.substr(1, operand1.length() - 2);
-					set_memory_64(temp_address, std::stoull(operand1_indirect, nullptr, 16));
-					temp_address += 8;
-				}
-			}
-			else
-			{
-				set_memory(temp_address++, 0x02);
-				set_memory_64(temp_address, std::stoull(operand1, nullptr, 16));
-				temp_address += 8;
-			}
+			if (!load_operand(operand1, temp_address))
+				return false;
 
-			if (opcode_map.at(instruction) == 0x07 || opcode_map.at(instruction) == 0x10 || opcode_map.at(instruction) == 0x11)
+			if (opcode_map.at(instruction) == 0x07 || opcode_map.at(instruction) == 0x10 || opcode_map.at(instruction) == 0x11) // single operand instructions
 				continue;
 
-			if (operand2.length() == 16)
-			{
-				set_memory(temp_address++, 0x00);
-				uint64_t direct_address = std::stoull(operand2, nullptr, 16);
-				set_memory_64(temp_address, direct_address);
-				temp_address += 8;
-			}
-			else if (operand2.at(0) == 'r')
-			{
-				set_memory(temp_address++, 0x01);
-				set_memory(temp_address++, register_map.at(operand2));
-			}
-			else if (operand2.at(0) == '[')
-			{
-				if (operand2.length() == 4)
-				{
-					set_memory(temp_address++, 0x04);
-					std::string operand2_indirect = operand2.substr(1, operand2.length() - 2);
-					set_memory(temp_address++, register_map.at(operand2_indirect));
-				}
-				else if (operand2.length() == 18)
-				{
-					set_memory(temp_address++, 0x03);
-					std::string operand2_indirect = operand2.substr(1, operand2.length() - 2);
-					set_memory_64(temp_address, std::stoull(operand2_indirect, nullptr, 16));
-					temp_address += 8;
-				}
-			}
-			else
-			{
-				set_memory(temp_address++, 0x02);
-				set_memory_64(temp_address, std::stoull(operand2, nullptr, 16));
-				temp_address += 8;
-			}
+			if (!load_operand(operand2, temp_address))
+				return false;
+		}
+		else
+		{
+			std::cout << "ERROR ??INVALID INSTRUCTION?? ERROR" << std::endl << "Instruction: " << instruction << std::endl;
+			return false;
 		}
 	}
 	return true;

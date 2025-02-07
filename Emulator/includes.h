@@ -7,4 +7,5 @@
 #include <iomanip>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 #include "CPU.h"

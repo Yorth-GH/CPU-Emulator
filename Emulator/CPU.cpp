@@ -2,7 +2,7 @@
 
 uint64_t CPU::get_register(uint64_t reg)
 {
-	int register_num = reg - 240;
+	uint64_t register_num = reg - 240;
 	if (register_num >= 0 && register_num < 4)
 		return registers[register_num];
 	else
@@ -11,7 +11,7 @@ uint64_t CPU::get_register(uint64_t reg)
 
 bool CPU::set_register(uint64_t reg, uint64_t data)
 {
-	int register_num = reg - 240;
+	uint64_t register_num = reg - 240;
 	if (register_num >= 0 && register_num < 4)
 	{
 		registers[register_num] = data;
