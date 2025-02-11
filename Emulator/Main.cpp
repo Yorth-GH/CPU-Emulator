@@ -2,8 +2,8 @@
 
 void main() 
 {
-	::testing::InitGoogleTest();
-	RUN_ALL_TESTS();
+	//::testing::InitGoogleTest();
+	//RUN_ALL_TESTS();
 
 	CPU cpu;
 

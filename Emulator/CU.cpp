@@ -5,7 +5,7 @@ bool CPU::get_halted() const
 	return CPU::halted;
 }
 
-uint64_t CPU::fetch_64()
+uint64_t CPU::fetch_64() 
 {
 	uint64_t value = 0;
 	for (int i = 0; i < 8; i++)
@@ -15,7 +15,17 @@ uint64_t CPU::fetch_64()
 
 uint8_t CPU::fetch()
 {
-	return memory[program_counter++];
+	uint64_t page_number = program_counter >> 12;
+	uint64_t offset = program_counter & 0xFFF;
+
+	if (memory.find(page_number) == memory.end())
+		return 0;
+
+	uint8_t result = memory[page_number][offset];
+	program_counter++;
+	return result;
+
+	//return memory[program_counter++];
 }
 
 void CPU::decode()

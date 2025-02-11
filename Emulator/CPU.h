@@ -42,12 +42,16 @@
 * 2 - less than
 */
 
+#define page_size 4096
+
 class CPU 
 {
 private:
 	uint64_t registers[5] = { 0 };
 	uint64_t program_counter = 0;
-	std::unordered_map<uint64_t, uint8_t> memory;
+
+	std::unordered_map<uint64_t, uint8_t*> memory;
+	//std::unordered_map<uint64_t, uint8_t> memory;
 
 	std::unordered_map<std::string, uint8_t> opcode_map = 
 	{

@@ -28,8 +28,17 @@ bool CPU::set_register(uint64_t reg, uint64_t data)
 
 bool CPU::set_memory(uint64_t address, uint8_t data)
 {
-	memory[address] = data;
+	uint64_t page_number = address >> 12;
+	uint64_t offset = address & 0xFFF;
+
+	if (memory.find(page_number) == memory.end())
+		memory[page_number] = new uint8_t[page_size];
+
+	memory[page_number][offset] = data;
 	return true;
+
+	//memory[address] = data
+	//return true;
 }
 
 bool CPU::set_memory_64(uint64_t address, uint64_t data)
@@ -42,7 +51,15 @@ bool CPU::set_memory_64(uint64_t address, uint64_t data)
 
 uint8_t CPU::get_memory(uint64_t address)
 {
-	return memory[address];
+	uint64_t page_number = address >> 12;
+	uint64_t offset = address & 0xFFF;
+
+	if (memory.find(page_number) == memory.end())
+		return 0;
+
+	return memory[page_number][offset];
+
+	//return memory[address]
 }
 
 uint64_t CPU::get_memory_64(uint64_t address)
