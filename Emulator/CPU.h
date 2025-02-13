@@ -49,9 +49,8 @@ class CPU
 private:
 	uint64_t registers[5] = { 0 };
 	uint64_t program_counter = 0;
-
+	
 	std::unordered_map<uint64_t, uint8_t*> memory;
-	//std::unordered_map<uint64_t, uint8_t> memory;
 
 	std::unordered_map<std::string, uint8_t> opcode_map = 
 	{
@@ -68,9 +67,9 @@ private:
 	};
 
 	// for decoding and executing
-	uint8_t opcode;
-	uint64_t operand1, operand2;
-	uint8_t op1_marker, op2_marker;
+	uint8_t opcode = 0;
+	uint64_t operand1 = 0, operand2 = 0;
+	uint8_t op1_marker = 0, op2_marker = 0;
 	bool halted = false;
 
 	// for cmp
@@ -78,6 +77,113 @@ private:
 	uint64_t value2 = 0;
 
 public:
+	~CPU();
+
+	CPU() {};
+
+	CPU& operator=(const CPU& other) 
+	{
+		if (this == &other) 
+			return *this;
+
+		for (auto& entry : memory)
+			delete[] entry.second;
+
+		memory.clear();
+
+		program_counter = other.program_counter;
+		std::copy(std::begin(other.registers), std::end(other.registers), std::begin(registers));
+		opcode_map = other.opcode_map;
+		register_map = other.register_map;
+		opcode = other.opcode;
+		operand1 = other.operand1;
+		operand2 = other.operand2;
+		op1_marker = other.op1_marker;
+		op2_marker = other.op2_marker;
+		halted = other.halted;
+		value1 = other.value1;
+		value2 = other.value2;
+
+		for (auto& entry : other.memory) 
+		{
+			uint8_t* new_page = new uint8_t[page_size];
+			std::memcpy(new_page, entry.second, page_size);
+			memory[entry.first] = new_page;
+		}
+		return *this;
+	}
+
+	CPU& operator=(CPU&& other) noexcept
+	{
+		if (this == &other) return *this;
+
+		for (auto& entry : memory)
+			delete[] entry.second;
+
+		memory.clear();
+
+		program_counter = other.program_counter;
+		std::copy(std::begin(other.registers), std::end(other.registers), std::begin(registers));
+		opcode_map = std::move(other.opcode_map);
+		register_map = std::move(other.register_map);
+		opcode = other.opcode;
+		operand1 = other.operand1;
+		operand2 = other.operand2;
+		op1_marker = other.op1_marker;
+		op2_marker = other.op2_marker;
+		halted = other.halted;
+		value1 = other.value1;
+		value2 = other.value2;
+		memory = std::move(other.memory);
+
+		other.program_counter = 0;
+		other.halted = false;
+		return *this;
+	}
+
+	CPU(const CPU& other) 
+	{
+		program_counter = other.program_counter;
+		std::copy(std::begin(other.registers), std::end(other.registers), std::begin(registers));
+		opcode_map = other.opcode_map;
+		register_map = other.register_map;
+		opcode = other.opcode;
+		operand1 = other.operand1;
+		operand2 = other.operand2;
+		op1_marker = other.op1_marker;
+		op2_marker = other.op2_marker;
+		halted = other.halted;
+		value1 = other.value1;
+		value2 = other.value2;
+
+		for (auto& entry : other.memory) 
+		{
+			uint8_t* new_page = new uint8_t[page_size];
+			std::memcpy(new_page, entry.second, 4096);
+			memory[entry.first] = new_page;
+		}
+	}
+
+	CPU(CPU&& other) noexcept
+	{
+		program_counter = other.program_counter;
+		std::copy(std::begin(other.registers), std::end(other.registers), std::begin(registers));
+		opcode_map = std::move(other.opcode_map);
+		register_map = std::move(other.register_map);
+		opcode = other.opcode;
+		operand1 = other.operand1;
+		operand2 = other.operand2;
+		op1_marker = other.op1_marker;
+		op2_marker = other.op2_marker;
+		halted = other.halted;
+		value1 = other.value1;
+		value2 = other.value2;
+		memory = std::move(other.memory);
+
+		other.program_counter = 0;
+		other.halted = false;
+	}
+
 	// CPU
 	uint64_t get_pc();
 	uint64_t get_register(uint64_t reg);
@@ -86,6 +192,7 @@ public:
 	bool set_memory_64(uint64_t address, uint64_t data);
 	uint8_t get_memory(uint64_t address);
 	uint64_t get_memory_64(uint64_t address);
+	void free_page(uint64_t address);
 	void reset();
 
 	// ALU

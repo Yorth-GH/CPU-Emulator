@@ -1,5 +1,15 @@
 #include "includes.h"
 
+void CPU::free_page(uint64_t address)
+{
+	auto it = memory.find(address);
+	if (it != memory.end())
+	{
+		delete[] it->second;
+		memory.erase(it);
+	}
+}
+
 bool CPU::get_halted() const
 {
 	return CPU::halted;
@@ -24,8 +34,6 @@ uint8_t CPU::fetch()
 	uint8_t result = memory[page_number][offset];
 	program_counter++;
 	return result;
-
-	//return memory[program_counter++];
 }
 
 void CPU::decode()

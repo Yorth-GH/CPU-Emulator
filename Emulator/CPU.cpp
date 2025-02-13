@@ -36,9 +36,6 @@ bool CPU::set_memory(uint64_t address, uint8_t data)
 
 	memory[page_number][offset] = data;
 	return true;
-
-	//memory[address] = data
-	//return true;
 }
 
 bool CPU::set_memory_64(uint64_t address, uint64_t data)
@@ -58,8 +55,6 @@ uint8_t CPU::get_memory(uint64_t address)
 		return 0;
 
 	return memory[page_number][offset];
-
-	//return memory[address]
 }
 
 uint64_t CPU::get_memory_64(uint64_t address)
@@ -73,9 +68,12 @@ uint64_t CPU::get_memory_64(uint64_t address)
 
 void CPU::reset()
 {
-	memory.clear();
+	while (!memory.empty())
+	{
+		free_page(memory.begin()->first);
+	}
 
-	for (uint64_t reg : registers)
+	for (uint64_t& reg : registers)
 		reg = 0;
 
 	program_counter = 0;
@@ -84,4 +82,9 @@ void CPU::reset()
 	operand1 = 0, operand2 = 0;
 	op1_marker = 0, op2_marker = 0;
 	halted = false;
+}
+
+CPU::~CPU()
+{
+	this->reset();
 }
